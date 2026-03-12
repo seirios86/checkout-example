@@ -7,6 +7,7 @@ const { Client, Config, CheckoutAPI } = require("@adyen/api-library");
 const { hmacValidator } = require('@adyen/api-library');
 const { config, getCurrencyForCountry, getLineItemsForPaymentMethod } = require('../config');
 const { ConfigurationError, retryRequest, handleAdyenError } = require('../utils/errorHandler');
+const { StoredPaymentMethod } = require("@adyen/api-library/lib/src/typings/checkout/storedPaymentMethod");
 
 // Adyen NodeJS library configuration
 const adyenConfig = new Config();
@@ -77,14 +78,22 @@ const createSession = async (sessionData) => {
       merchantAccount: config.adyen.ADYEN_MERCHANT_ACCOUNT,
       reference: orderRef,
       returnUrl: `${baseUrl}/handleShopperRedirect?orderRef=${orderRef}`,
-      lineItems: lineItems
+      lineItems: lineItems,
+      recurringProcessingModel: "UnscheduledCardOnFile",
+      shopperReference: "pspac_1234567890",
+      storePaymentMethod: true,
+      storePaymentMethodMode: "askForConsent",
     };
 
     console.log('Creating session with request:', {
       amount: sessionRequest.amount,
       countryCode: sessionRequest.countryCode,
       reference: sessionRequest.reference,
-      returnUrl: sessionRequest.returnUrl
+      returnUrl: sessionRequest.returnUrl,
+      recurringProcessingModel: sessionRequest.recurringProcessingModel,
+      shopperReference: sessionRequest.shopperReference,
+      storePaymentMethod: sessionRequest.storePaymentMethod,
+      storePaymentMethodMode: sessionRequest.storePaymentMethodMode,
     });
 
     const response = await retryRequest(async () => {
